@@ -1,5 +1,5 @@
 #include "ML8511.h"
-#include <Wire.h>              // Required for I2C
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x20, 16, 2);  // Address, columns, rows
@@ -48,13 +48,13 @@ void loop() {
   lcd.clear(); 
   
   // Line 1
-  lcd.setCursor(0, 0);  // Changed from 2 to 0 for better alignment
+  lcd.setCursor(0, 0);
   lcd.print("UV:");
-  lcd.print(uvIntensity, 2);  // Show with 2 decimals
+  lcd.print(uvIntensity, 2);
   lcd.print(" mW/cm2");
   
   // Line 2
-  lcd.setCursor(0, 1);  // Changed from 2 to 0
+  lcd.setCursor(0, 1);
   lcd.print("Cat:");
   lcd.print(uvCategory);
   lcd.print(" (");
