@@ -58,7 +58,7 @@ void loop() {
   lcd.print("Cat:");
   lcd.print(uvCategory);
   lcd.print(" (");
-  lcd.print(uvSensor.estimateDUVindex(uvIntensity));
+  lcd.print(round(uvSensor.estimateDUVindex(uvIntensity)));
   lcd.print(")");
   Serial.print("Analog");
   
@@ -70,7 +70,16 @@ void loop() {
   Serial.print("Category: ");
   Serial.print(uvCategory);
   Serial.print(" (");
-  Serial.print(uvSensor.estimateDUVindex(uvIntensity));
+  Serial.print(round(uvSensor.estimateDUVindex(uvIntensity)));
   Serial.println(")");
-  delay(1000);  // Wait 1 seconds
+
+    // Calculate and display voltage
+  int analogValue = analogRead(analogPin);
+  float voltage = analogValue * (9.0 / 1023.0);
+
+  Serial.print(" | Voltage: ");
+  Serial.print(voltage, 3);
+  Serial.println(" V");
+  delay(3000);  // Wait x seconds
 }
+
