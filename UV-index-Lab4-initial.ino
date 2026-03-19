@@ -1,6 +1,7 @@
-#include "ML8511.h"
+##include "ML8511.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
+#include <movingAvg.h>
 
 LiquidCrystal_I2C lcd(0x20, 16, 2);  // Address, columns, rows
 
@@ -9,12 +10,20 @@ const int enablePin = 7;    // The RST pin from the UV Click
 
 ML8511 uvSensor(analogPin, enablePin);
 
+// Create moving average objects
+movingAvg uvFilter(10);      // For UV readings (10-point average)
+movingAvg voltageFilter(10); // For voltage readings (10-point average)
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("UV Sensor Test");
+  Serial.println("UV Sensor Test with Moving Average");
   
   lcd.init();          
   lcd.backlight();
+  
+  // Initialize the moving average filters
+  uvFilter.begin();
+  voltageFilter.begin();
 }
 
 // Reads UV intensity and returns the category
@@ -37,49 +46,59 @@ String showUVCategory(float maxUV, byte &categ) {
 }
 
 void loop() {
-
-  float uvIntensity = uvSensor.getUV();
-
-  byte numCateg = 0;
+  // Read raw UV intensity
+  float rawUV = uvSensor.getUV();
   
-
-  String uvCategory = showUVCategory(uvIntensity, numCateg);
+  // Read raw voltage
+  int analogValue = analogRead(analogPin);
+  float rawVoltage = analogValue * (3.3 / 1023.0);
+  
+  //moving average to UV
+  int rawUV_int = rawUV * 1000;  // Multiply by 1000 to preserve 3 decimal places
+  int filteredUV_int = uvFilter.reading(rawUV_int);
+  float filteredUV = filteredUV_int / 1000.0;
+  
+  //moving average to voltage
+  int rawVoltage_int = rawVoltage * 1000;
+  int filteredVoltage_int = voltageFilter.reading(rawVoltage_int);
+  float filteredVoltage = filteredVoltage_int / 1000.0;
+  
+  byte numCateg = 0;
+  String uvCategory = showUVCategory(filteredUV, numCateg);
   
   lcd.clear(); 
   
   // Line 1
   lcd.setCursor(0, 0);
   lcd.print("UV:");
-  lcd.print(uvIntensity, 2);
+  lcd.print(filteredUV, 2);
   lcd.print(" mW/cm2");
   
   // Line 2
   lcd.setCursor(0, 1);
-  lcd.print("Cat:");
   lcd.print(uvCategory);
-  lcd.print(" (");
-  lcd.print(round(uvSensor.estimateDUVindex(uvIntensity)));
+  lcd.print(" ");
+  lcd.print("(");
+  lcd.print(round(uvSensor.estimateDUVindex(filteredUV)));
   lcd.print(")");
-  Serial.print("Analog");
+  lcd.print(" ");
+  lcd.print(filteredVoltage,2);
+  lcd.print("V");
+
   
-  // serial port
-  Serial.print(analogPin);
-  Serial.print("UV Intensity: ");
-  Serial.print(uvIntensity);
-  Serial.print(" mW/cm2 ");
-  Serial.print("Category: ");
-  Serial.print(uvCategory);
-  Serial.print(" (");
-  Serial.print(round(uvSensor.estimateDUVindex(uvIntensity)));
-  Serial.println(")");
-
-    // Calculate and display voltage
-  int analogValue = analogRead(analogPin);
-  float voltage = analogValue * (9.0 / 1023.0);
-
-  Serial.print(" | Voltage: ");
-  Serial.print(voltage, 3);
+  // Serial output
+  Serial.println("Sensor Readings");
+  Serial.print("UV - Raw: ");
+  Serial.print(rawUV, 3);
+  Serial.print(" mW/cm2 | Filtered: ");
+  Serial.print((filteredUV,2));
+  Serial.println(" mW/cm2");
+  
+  Serial.print("Voltage - Raw: ");
+  Serial.print(rawVoltage, 3);
+  Serial.print(" V | Filtered: ");
+  Serial.print(filteredVoltage, 3);
   Serial.println(" V");
-  delay(3000);  // Wait x seconds
+  
+  delay(1000);  // Wait 0.3 seconds between readings
 }
-
