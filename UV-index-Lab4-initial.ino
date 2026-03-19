@@ -1,4 +1,4 @@
-##include "ML8511.h"
+#include "ML8511.h"
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <movingAvg.h>
@@ -87,7 +87,6 @@ void loop() {
 
   
   // Serial output
-  Serial.println("Sensor Readings");
   Serial.print("UV - Raw: ");
   Serial.print(rawUV, 3);
   Serial.print(" mW/cm2 | Filtered: ");
