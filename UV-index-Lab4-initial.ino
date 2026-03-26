@@ -1,23 +1,25 @@
-#include "ML8511.h"
+// UV-detector
+#include "ML8511.h" //uses ML8511 UV-detector libary
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h> //lcd display libary
 #include <movingAvg.h>
 
-LiquidCrystal_I2C lcd(0x20, 16, 2);  // Address, columns, rows
+LiquidCrystal_I2C lcd(0x20, 16, 2);  // (Address, columns, rows) defines the boundarys of the lcd screen 
 
-const int analogPin = A0;   // The AN pin from the UV Click
-const int enablePin = 7;    // The RST pin from the UV Click
+const int analogPin = A0;   // The AN pin is the Anaolog input pin from the UV detector
+const int enablePin = 7;    // The RST pin for the UV-detector 
 
-ML8511 uvSensor(analogPin, enablePin);
+ML8511 uvSensor(analogPin, enablePin); //sets the 2 pins required for the uv sensor
 
 // Create moving average objects
-movingAvg uvFilter(10);      // For UV readings (10-point average)
-movingAvg voltageFilter(10); // For voltage readings (10-point average)
+movingAvg uvFilter(10);      // For UV readings (n-point average)
+movingAvg voltageFilter(10); // For voltage readings (n-point average)
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600); //starts serial output
   Serial.println("UV Sensor Test with Moving Average");
-  
+
+  //starts lcd back light and backlight
   lcd.init();          
   lcd.backlight();
   
@@ -30,7 +32,6 @@ void setup() {
 String showUVCategory(float maxUV, byte &categ) { 
   char strCat[12];
   categ = (byte)(maxUV + 0.5);  
-
   if (categ < 3) {
     strcpy(strCat, "LOW");
   } else if (categ < 6) {
@@ -54,7 +55,7 @@ void loop() {
   float rawVoltage = analogValue * (3.3 / 1023.0);
   
   //moving average to UV
-  int rawUV_int = rawUV * 1000;  // Multiply by 1000 to preserve 3 decimal places
+  int rawUV_int = rawUV * 1000;  // Multiply by 1000 to keep 3 decimal places
   int filteredUV_int = uvFilter.reading(rawUV_int);
   float filteredUV = filteredUV_int / 1000.0;
   
@@ -69,17 +70,17 @@ void loop() {
   lcd.clear(); 
   
   // Line 1
-  lcd.setCursor(0, 0);
+  lcd.setCursor(0, 0); // sets postion of cursor on the lcd screen to the top row
   lcd.print("UV:");
-  lcd.print(filteredUV, 2);
+  lcd.print(filteredUV, 2); //prints the UV in mW/cm^2
   lcd.print(" mW/cm2");
   
   // Line 2
-  lcd.setCursor(0, 1);
-  lcd.print(uvCategory);
+  lcd.setCursor(0, 1); // sets postion of cursor on the lcd screen to the bottom row
+  lcd.print(uvCategory); finds
   lcd.print(" ");
   lcd.print("(");
-  lcd.print(round(uvSensor.estimateDUVindex(filteredUV)));
+  lcd.print(round(uvSensor.estimateDUVindex(filteredUV))); //finds the UV index 
   lcd.print(")");
   lcd.print(" ");
   lcd.print(filteredVoltage,2);
