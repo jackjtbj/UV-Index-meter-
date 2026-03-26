@@ -8,12 +8,14 @@ Features
 - UV Index estimation
 - UV category (LOW to EXTREME)
 - Updates every second
+- plays a warning sound after reaching a unsafe UV index level of 5
 
 Hardware Required
 
 - Arduino UNO board
 - ML8511 UV Sensor
 - 16x2 I2C LCD display
+- a Df robot speaker 2
 
 Software Required
 
