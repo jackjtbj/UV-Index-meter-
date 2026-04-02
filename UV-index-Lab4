@@ -66,11 +66,10 @@ void loop() {
   byte numCateg = 0;
   String uvCategory = showUVCategory(filteredUV, numCateg);
   
-  if (round(uvSensor.estimateDUVindex(filteredUV)) < 6) {
-    else if (round(uvSensor.estimateDUVindex(filteredUV)) > 6); 
-      // Different frequencies by changing delay times
-
-    for (int i = 0; i < 100; i++) {
+  int uvIndex = round(uvSensor.estimateDUVindex(filteredUV));
+  
+  if (uvIndex >= 6) { 
+    for (int i = 0; i < 30; i++) {
       digitalWrite(buzzPin, 1);
       delay(1);
       digitalWrite(buzzPin, 0);
@@ -91,8 +90,9 @@ void loop() {
       delayMicroseconds(100);
     }
     delay(500);
+  }
+  
   lcd.clear(); 
-  if 
   // Line 1
   lcd.setCursor(0, 0);
   lcd.print("UV:");
@@ -104,19 +104,18 @@ void loop() {
   lcd.print(uvCategory);
   lcd.print(" ");
   lcd.print("(");
-  lcd.print(round(uvSensor.estimateDUVindex(filteredUV)));
+  lcd.print(uvIndex);
   lcd.print(")");
   lcd.print(" ");
-  lcd.print(filteredVoltage,2);
+  lcd.print(filteredVoltage, 2);
   lcd.print("V");
 
-  
   // Serial output
   Serial.println("Sensor Readings");
   Serial.print("UV - Raw: ");
   Serial.print(rawUV, 3);
   Serial.print(" mW/cm2 | Filtered: ");
-  Serial.print((filteredUV,2));
+  Serial.print(filteredUV, 2);
   Serial.println(" mW/cm2");
   
   Serial.print("Voltage - Raw: ");
@@ -125,5 +124,5 @@ void loop() {
   Serial.print(filteredVoltage, 3);
   Serial.println(" V");
   
-  delay(1000);  // Wait 0.3 seconds between readings
+  delay(1000);  // Wait 1 second between readings
 }
